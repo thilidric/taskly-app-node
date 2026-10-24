@@ -119,7 +119,7 @@ export function summarizeResults(json) {
     if (file.status === 'failed' && !failedAssertions.length) failures.push({ file: relative, test: '(suite failed to load)', message: trimMessage(file.message) })
   }
   return {
-    files: json.numTotalTestSuites ?? 0,
+    files: json.testResults?.length ?? 0, // numTotalTestSuites also counts describe blocks
     total: json.numTotalTests ?? 0,
     passed: json.numPassedTests ?? 0,
     failed: json.numFailedTests ?? 0,
