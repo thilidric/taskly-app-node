@@ -8,6 +8,7 @@
 set -euo pipefail
 
 dir="$(cd "$1" && pwd)"
+here="$(cd "$(dirname "$0")" && pwd)"
 output() { echo "$1" >> "$GITHUB_OUTPUT"; }
 
 status="$(node -p "try { require('${dir}/verification.json').status } catch { '' }")"
@@ -57,7 +58,7 @@ else
   git commit -q -m "$(message 'test: raise unit test coverage [agent-tests]')"
   git push -q origin "HEAD:refs/heads/${branch}"
   output "sha=$(git rev-parse HEAD)"
-  node "$(dirname "$0")/render-comment.mjs" --dir "$dir" --run-url "$RUN_URL" --agent-outcome "$AGENT_OUTCOME" \
+  node "${here}/render-comment.mjs" --dir "$dir" --run-url "$RUN_URL" --agent-outcome "$AGENT_OUTCOME" \
     --push pr-opened --out "${work}/body.md"
   if gh pr create --repo "$REPOSITORY" --base "$BASE_REF" --head "$branch" \
       --title 'test: raise unit test coverage (test-engineer agent)' --body-file "${work}/body.md"; then
