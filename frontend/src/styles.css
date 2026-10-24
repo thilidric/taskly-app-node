@@ -91,3 +91,6 @@
     justify-content: flex-end;
   }
 }
+.progress {
+  width: 100%;
+}

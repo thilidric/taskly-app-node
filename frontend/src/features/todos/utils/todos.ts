@@ -62,6 +62,27 @@ export function isOverdue(todo: Todo): boolean {
   return !todo.completed && !!todo.due_date && todo.due_date < localDate
 }
 
+export interface TodoSummary {
+  total: number
+  completed: number
+  active: number
+  overdue: number
+  percentComplete: number
+}
+
+export function summarizeTodos(todos: Todo[]): TodoSummary {
+  const completed = todos.filter((todo) => todo.completed).length
+  return {
+    total: todos.length,
+    completed,
+    active: todos.length - completed,
+    overdue: todos.filter(isOverdue).length,
+    percentComplete: todos.length
+      ? Math.round((completed / todos.length) * 100)
+      : 0,
+  }
+}
+
 export function formatDate(date: string): string {
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
