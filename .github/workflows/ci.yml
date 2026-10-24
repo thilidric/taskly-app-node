@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -75,9 +76,10 @@ jobs:
           retention-days: 14
 
   # Browsable HTML coverage for main on GitHub Pages
-  # (Settings → Pages → Source: GitHub Actions).
+  # (Settings → Pages → Source: GitHub Actions). Start a new run instead of
+  # re-running this job: a re-run finds the previous attempt's Pages artifact.
   coverage-pages:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: [backend, frontend]
     runs-on: ubuntu-latest
     timeout-minutes: 5
