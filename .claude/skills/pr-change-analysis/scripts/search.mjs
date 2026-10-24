@@ -3,7 +3,7 @@
 // Grep tools, and the agent may not run arbitrary shell commands).
 //
 //   node .claude/skills/pr-change-analysis/scripts/search.mjs files '<glob>'
-//   node .claude/skills/pr-change-analysis/scripts/search.mjs grep '<regex>' [path ...] [--files-only] [--ignore-case]
+//   node .claude/skills/pr-change-analysis/scripts/search.mjs grep '<regex>' [path ...] [--files-only] [--ignore-case] [--context N]
 //
 // Paths are repo-relative. node_modules, .git, build output, coverage, the
 // generated Prisma client and .env files are never searched.
@@ -65,7 +65,7 @@ export function searchFiles(glob) {
   return [...walk('')].filter((file) => pattern.test(file)).sort()
 }
 
-export function grep(regex, paths = [], { filesOnly = false, ignoreCase = false } = {}) {
+export function grep(regex, paths = [], { filesOnly = false, ignoreCase = false, context = 0 } = {}) {
   const pattern = new RegExp(regex, ignoreCase ? 'i' : '')
   const results = []
   for (const file of filesUnder(paths)) {
@@ -73,11 +73,28 @@ export function grep(regex, paths = [], { filesOnly = false, ignoreCase = false 
     const lines = readFileSync(path.join(REPO_ROOT, file), 'utf8').split('\n')
     for (let index = 0; index < lines.length; index++) {
       if (!pattern.test(lines[index])) continue
-      results.push(filesOnly ? file : `${file}:${index + 1}: ${lines[index].trim().slice(0, MAX_LINE)}`)
-      if (filesOnly) break
+      if (filesOnly) {
+        results.push(file)
+        break
+      }
+      const shown = lines.slice(index, index + 1 + context).map((line, offset) => `${file}:${index + 1 + offset}: ${line.slice(0, MAX_LINE)}`)
+      results.push(shown.join('\n'))
     }
   }
   return results
+}
+
+export function parseGrepArgs(args) {
+  const options = { paths: [], filesOnly: false, ignoreCase: false, context: 0 }
+  for (let index = 0; index < args.length; index++) {
+    const arg = args[index]
+    if (arg === '--files-only') options.filesOnly = true
+    else if (arg === '--ignore-case') options.ignoreCase = true
+    else if (arg === '--context') options.context = Math.min(Math.max(Number(args[++index]) || 0, 0), 60)
+    else if (arg.startsWith('-')) throw new Error(`unknown option ${arg}; supported: --files-only, --ignore-case, --context <lines after match>`)
+    else options.paths.push(arg)
+  }
+  return options
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -87,7 +104,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const results = command === 'files'
       ? searchFiles(pattern)
       : command === 'grep'
-        ? grep(pattern, rest.filter((arg) => !arg.startsWith('--')), { filesOnly: rest.includes('--files-only'), ignoreCase: rest.includes('--ignore-case') })
+        ? (() => { const { paths, ...options } = parseGrepArgs(rest); return grep(pattern, paths, options) })()
         : (() => { throw new Error(`unknown command ${command}`) })()
     console.log(results.slice(0, MAX_RESULTS).join('\n') || '(no matches)')
     if (results.length > MAX_RESULTS) console.log(`… ${results.length - MAX_RESULTS} more; narrow the pattern or path`)

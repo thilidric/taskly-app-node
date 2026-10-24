@@ -30,8 +30,11 @@ export function summarize(lines) {
         pending.set(block.id, block)
         if (block.name === 'Skill') summary.invokedSkills.push(block.input?.skill ?? block.input?.command ?? 'unknown')
         if (block.name === 'Bash') {
-          const match = String(block.input?.command ?? '').match(TEST_COMMAND)
-          summary.commands.push(match ? `${match[1]} ${match[2]}` : 'other')
+          const command = String(block.input?.command ?? '')
+          const match = command.match(TEST_COMMAND)
+          summary.commands.push(match ? `${match[1]} ${match[2]}`
+            : /search\.mjs\s+(files|grep)/.test(command) ? `search ${command.match(/search\.mjs\s+(\w+)/)[1]}`
+              : /analyze-changes\.mjs/.test(command) ? 'analyze' : 'other (blocked)')
         }
         if (['Write', 'Edit', 'MultiEdit'].includes(block.name) && block.input?.file_path) summary.filesWritten.push(block.input.file_path)
       }

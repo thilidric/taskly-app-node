@@ -102,7 +102,7 @@ describe('transcript summary', () => {
     ].map((line) => (typeof line === 'string' ? line : JSON.stringify(line)))
     const summary = summarize(lines)
     assert.deepEqual(summary.invokedSkills, ['frontend-unit-tests'])
-    assert.deepEqual(summary.commands, ['coverage frontend', 'other'])
+    assert.deepEqual(summary.commands, ['coverage frontend', 'other (blocked)'])
     assert.deepEqual(summary.filesWritten, ['frontend/src/lib/http.test.ts'])
     assert.equal(summary.blocked, 1)
     assert.equal(summary.turns, 12)

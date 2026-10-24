@@ -43,8 +43,11 @@ Search the code with the read-only search script. Wrap patterns in single quotes
 ```bash
 node .claude/skills/pr-change-analysis/scripts/search.mjs files 'frontend/src/**/*.test.tsx'
 node .claude/skills/pr-change-analysis/scripts/search.mjs grep 'from .*utils/todos' frontend/src --files-only
-node .claude/skills/pr-change-analysis/scripts/search.mjs grep 'summarize\(' backend
+node .claude/skills/pr-change-analysis/scripts/search.mjs grep '"TodoSummary"' backend/openapi.json --context 30
 ```
+
+There is no `git`. For a non-candidate file (an OpenAPI spec, for example),
+`Read` the current version. The manifest's `diff` covers the candidates.
 
 For every candidate, before deciding:
 

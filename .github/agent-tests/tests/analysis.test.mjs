@@ -88,3 +88,11 @@ describe('coverage summary', () => {
     assert.deepEqual(summarizeFile(data, []).changedStatements, { covered: 0, total: 0, pct: 100 })
   })
 })
+
+describe('search options', () => {
+  it('parses supported options and rejects unknown ones with guidance', async () => {
+    const { parseGrepArgs } = await import('../../../.claude/skills/pr-change-analysis/scripts/search.mjs')
+    assert.deepEqual(parseGrepArgs(['backend', '--context', '5', '--files-only']), { paths: ['backend'], filesOnly: true, ignoreCase: false, context: 5 })
+    assert.throws(() => parseGrepArgs(['-A30']), /supported: --files-only/)
+  })
+})
