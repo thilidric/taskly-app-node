@@ -78,6 +78,23 @@
         }
       }
     },
+    "/api/todos/summary": {
+      "get": {
+        "summary": "Task counts and completion progress",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/todos/{id}": {
       "parameters": [
         {
@@ -279,6 +296,64 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "TodoSummary": {
+        "type": "object",
+        "required": [
+          "total",
+          "completed",
+          "active",
+          "overdue",
+          "percentComplete",
+          "byPriority"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "completed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "active": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "overdue": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Active tasks whose due date is before today (UTC)."
+          },
+          "percentComplete": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "byPriority": {
+            "type": "object",
+            "description": "Active tasks per priority.",
+            "required": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "properties": {
+              "low": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "medium": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "high": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
           }
         }
       }
