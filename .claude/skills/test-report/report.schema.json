@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "test-report/v1",
+  "title": "Test agent report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "mode", "summary", "decisions", "suspectedDefects", "testRuns"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "mode": { "enum": ["pr", "coverage"] },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 1500 },
+    "decisions": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "action", "testFiles", "reason", "scenarios"],
+        "properties": {
+          "file": { "type": "string", "maxLength": 300 },
+          "action": { "enum": ["created", "updated", "deleted", "no-change", "skipped"] },
+          "testFiles": { "type": "array", "maxItems": 20, "items": { "type": "string", "maxLength": 300 } },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 600 },
+          "scenarios": { "type": "array", "maxItems": 60, "items": { "type": "string", "maxLength": 300 } }
+        }
+      }
+    },
+    "suspectedDefects": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "description", "evidence"],
+        "properties": {
+          "file": { "type": "string", "maxLength": 300 },
+          "line": { "type": "integer", "minimum": 1 },
+          "description": { "type": "string", "minLength": 1, "maxLength": 600 },
+          "evidence": { "type": "string", "minLength": 1, "maxLength": 1000 }
+        }
+      }
+    },
+    "testRuns": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["project", "passed", "failed"],
+        "properties": {
+          "project": { "enum": ["frontend", "backend"] },
+          "passed": { "type": "integer", "minimum": 0 },
+          "failed": { "type": "integer", "minimum": 0 },
+          "skipped": { "type": "integer", "minimum": 0 },
+          "todo": { "type": "integer", "minimum": 0 },
+          "stableRuns": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "coverage": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["project", "statements", "branches"],
+        "properties": {
+          "project": { "enum": ["frontend", "backend"] },
+          "statements": { "type": "number", "minimum": 0, "maximum": 100 },
+          "branches": { "type": "number", "minimum": 0, "maximum": 100 },
+          "changedLines": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["covered", "total"],
+            "properties": { "covered": { "type": "integer", "minimum": 0 }, "total": { "type": "integer", "minimum": 0 } }
+          }
+        }
+      }
+    },
+    "notes": { "type": "array", "maxItems": 20, "items": { "type": "string", "maxLength": 600 } }
+  }
+}
