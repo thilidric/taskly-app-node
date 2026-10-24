@@ -181,6 +181,16 @@ it('passes loading state and task presence to the list and disables creation', (
   expect(screen.getByRole('button', { name: 'New task' })).toBeDisabled()
 })
 
+it('summarizes all tasks, not only the filtered ones, and hides the summary when empty', () => {
+  const view = setup({
+    query: { data: [mockTodo, { ...mockTodo, id: 99, completed: true }] },
+  })
+  expect(screen.getByText('1 of 2 tasks completed')).toBeVisible()
+  view.unmount()
+  setup({ query: { data: [] } })
+  expect(screen.queryByLabelText('Task progress')).not.toBeInTheDocument()
+})
+
 it('disables creation while another mutation is busy', () => {
   setup({ busy: true })
   expect(screen.getByRole('button', { name: 'New task' })).toBeDisabled()

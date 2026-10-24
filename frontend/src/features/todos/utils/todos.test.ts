@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { formatDate, isOverdue, selectTodos, validateTodo } from './todos'
+import {
+  formatDate,
+  isOverdue,
+  selectTodos,
+  summarizeTodos,
+  validateTodo,
+} from './todos'
 import type { TodoInput } from '../types'
 import type { Todo } from '../types'
 
@@ -111,6 +117,48 @@ describe('validateTodo', () => {
       })
     },
   )
+})
+
+describe('summarizeTodos', () => {
+  afterEach(() => vi.useRealTimers())
+
+  it('returns zeros for an empty list', () => {
+    expect(summarizeTodos([])).toEqual({
+      total: 0,
+      completed: 0,
+      active: 0,
+      overdue: 0,
+      percentComplete: 0,
+    })
+  })
+
+  it('counts completed, active and overdue tasks and rounds the percentage', () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 9, 15, 12))
+    const todos = [
+      { ...base, id: 1, completed: true, due_date: '2026-10-01' },
+      { ...base, id: 2, due_date: '2026-10-14' },
+      { ...base, id: 3, due_date: '2026-10-15' },
+    ]
+    expect(summarizeTodos(todos)).toEqual({
+      total: 3,
+      completed: 1,
+      active: 2,
+      overdue: 1,
+      percentComplete: 33,
+    })
+  })
+
+  it('reports 100 percent when every task is completed', () => {
+    const todos = [
+      { ...base, completed: true },
+      { ...base, id: 2, completed: true },
+    ]
+    expect(summarizeTodos(todos)).toMatchObject({
+      active: 0,
+      percentComplete: 100,
+    })
+  })
 })
 
 describe('isOverdue and formatDate', () => {
