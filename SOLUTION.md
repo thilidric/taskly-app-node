@@ -49,6 +49,13 @@ commit on the PR branch. To opt out, add the `skip-agent-tests` label.
 `gh workflow run agent-tests.yml -f mode=coverage`. The agent targets the whole
 code base and opens a PR with the tests.
 
+**Coverage reports:**
+- Browsable HTML for `main`: https://thilidric.github.io/taskly-app-node/
+  (deployed by the `CI` workflow).
+- Every CI run, PRs included, has a coverage table in its run summary and
+  `coverage-backend` / `coverage-frontend` artifacts with the HTML report.
+- Locally: `npm run test:coverage` in `frontend/` or `backend/`, then open `coverage/index.html`.
+
 **Locally (same agent, same skills):**
 
 ```bash
