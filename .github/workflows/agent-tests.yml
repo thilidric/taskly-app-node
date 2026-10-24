@@ -165,7 +165,9 @@ jobs:
         id: agent
         continue-on-error: true
         env:
+          # Either secret works: an API key, or a subscription token from `claude setup-token`.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           MODEL: ${{ vars.AGENT_TESTS_MODEL || 'sonnet' }}
           BUDGET_USD: ${{ needs.plan.outputs.mode == 'coverage' && (vars.AGENT_TESTS_COVERAGE_BUDGET_USD || '15') || (vars.AGENT_TESTS_BUDGET_USD || '5') }}
           MODE: ${{ needs.plan.outputs.mode }}
@@ -175,10 +177,12 @@ jobs:
           CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'
           DISABLE_AUTOUPDATER: '1'
         run: |
-          if [ -z "$ANTHROPIC_API_KEY" ]; then
-            echo "::error title=Missing secret::Set the ANTHROPIC_API_KEY repository secret to enable the test agent."
+          if [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "::error title=Missing secret::Set the ANTHROPIC_API_KEY (or CLAUDE_CODE_OAUTH_TOKEN) repository secret to enable the test agent."
             exit 1
           fi
+          [ -n "$ANTHROPIC_API_KEY" ] || unset ANTHROPIC_API_KEY
+          [ -n "$CLAUDE_CODE_OAUTH_TOKEN" ] || unset CLAUDE_CODE_OAUTH_TOKEN
           # Only trusted values go into the prompt. PR title, body and comments are
           # never passed to the agent.
           if [ "$MODE" = coverage ]; then

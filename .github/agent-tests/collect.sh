@@ -19,8 +19,9 @@ for path in .claude .github/agent-tests; do
   git checkout HEAD -- "$path" 2>/dev/null || true
 done
 
-# Every change outside .agent/ goes into the patch; the validator rejects anything that is not a test.
-git add -A -- . ':(exclude).agent'
+# Every change goes into the patch (.agent/ is git-ignored); the validator
+# rejects anything that is not a test file.
+git add -A
 git diff --cached --binary --no-color HEAD > "$out/agent.patch"
 git reset -q
 

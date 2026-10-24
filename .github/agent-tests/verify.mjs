@@ -62,7 +62,16 @@ function main() {
   const projects = {}
   for (const name of names) projects[name] = { before: { coverage: coverageView(tests('coverage', name, ...manifestArg)) } }
 
-  if (!patchCheck.empty) execFileSync('git', ['apply', '--whitespace=nowarn', path.resolve(args.patch)], { cwd: REPO_ROOT, stdio: 'inherit' })
+  if (!patchCheck.empty) {
+    try {
+      execFileSync('git', ['apply', '--whitespace=nowarn', path.resolve(args.patch)], { cwd: REPO_ROOT, stdio: 'inherit' })
+    } catch {
+      const result = { status: 'failed', problems: ['patch does not apply to the PR head'], changedTests, projects }
+      writeFileSync(args.out, JSON.stringify(result, null, 2))
+      console.log('::error title=Agent tests verification::patch does not apply to the PR head')
+      return
+    }
+  }
 
   for (const name of names) {
     const own = changedTests.filter((file) => projectOf(file) === name)
