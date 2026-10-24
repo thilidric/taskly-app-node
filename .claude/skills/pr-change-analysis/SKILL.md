@@ -38,12 +38,20 @@ Trust `testable: false` from the script. Don't generate tests for skipped files.
 
 ## 2. Understand each candidate
 
+Search the code with the read-only search script. Wrap patterns in single quotes:
+
+```bash
+node .claude/skills/pr-change-analysis/scripts/search.mjs files 'frontend/src/**/*.test.tsx'
+node .claude/skills/pr-change-analysis/scripts/search.mjs grep 'from .*utils/todos' frontend/src --files-only
+node .claude/skills/pr-change-analysis/scripts/search.mjs grep 'summarize\(' backend
+```
+
 For every candidate, before deciding:
 
 1. Read the `diff` and then the **whole** source file. Context matters.
 2. Read each file in `relatedTests`. Know what is already asserted.
-3. `Grep` for importers of the file to understand how callers use it, especially
-   when exports or signatures changed.
+3. Search for importers of the file to understand how callers use it,
+   especially when exports or signatures changed.
 4. Classify the change: new behaviour · changed behaviour · bug fix · refactor
    (no behaviour change) · presentation only (markup or copy) · deletion.
 

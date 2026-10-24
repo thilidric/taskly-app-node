@@ -4,6 +4,23 @@ import {
   conventionalTestPath, findRelatedTests, isCommentOnlyDiff, parseChangedRanges, parseNameStatus,
 } from '../../../.claude/skills/pr-change-analysis/scripts/analyze-changes.mjs'
 import { expandRanges, summarizeFile } from '../../../.claude/lib/coverage.mjs'
+import { globToRegExp, grep, searchFiles } from '../../../.claude/skills/pr-change-analysis/scripts/search.mjs'
+
+describe('search script', () => {
+  it('converts globs', () => {
+    assert.ok(globToRegExp('frontend/src/**/*.test.tsx').test('frontend/src/a/b/C.test.tsx'))
+    assert.ok(globToRegExp('frontend/src/**/*.test.tsx').test('frontend/src/C.test.tsx'))
+    assert.ok(!globToRegExp('frontend/src/*.tsx').test('frontend/src/a/C.tsx'))
+    assert.ok(globToRegExp('backend/{src,tests}/*.ts').test('backend/tests/x.ts'))
+  })
+
+  it('finds files and text in the repository, skipping dependencies', () => {
+    assert.ok(searchFiles('backend/src/**/*.ts').includes('backend/src/factory.ts'))
+    assert.ok(!searchFiles('**/package.json').some((file) => file.includes('node_modules')))
+    assert.deepEqual(grep('export function createApp', ['backend/src'], { filesOnly: true }), ['backend/src/factory.ts'])
+    assert.throws(() => grep('x', ['../outside']), /outside the repository/)
+  })
+})
 
 describe('change analysis', () => {
   it('parses name-status output including renames and deletions', () => {

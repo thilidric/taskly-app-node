@@ -7,8 +7,8 @@ user-invocable: true
 
 # Run unit tests
 
-All test execution goes through one wrapper. It is the **only** shell command
-available to the test agent:
+All test execution goes through one wrapper. It is the **only** way the test
+agent may run tests, type-check or format:
 
 ```bash
 node .claude/skills/run-unit-tests/scripts/tests.mjs <command> --project <frontend|backend> [options] [files...]

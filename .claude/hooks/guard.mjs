@@ -14,17 +14,36 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const ALLOWED_SCRIPTS = [
   '.claude/skills/run-unit-tests/scripts/tests.mjs',
   '.claude/skills/pr-change-analysis/scripts/analyze-changes.mjs',
+  '.claude/skills/pr-change-analysis/scripts/search.mjs',
 ]
-// Plain words only: no shell operators, substitutions, redirections, quotes or globs.
-const SAFE_ARG = /^[A-Za-z0-9_@%+=:,./-]+$/
+// Unquoted words: plain characters only, so the shell cannot expand, substitute,
+// redirect or chain anything.
+const SAFE_WORD = /^[A-Za-z0-9_@%+=:,./-]+$/
+
+/**
+ * Splits a command into words. Single-quoted words are allowed because bash
+ * treats their content literally (used for search patterns). Returns null if
+ * anything else could be interpreted by the shell.
+ */
+export function tokenize(command) {
+  const words = []
+  for (const match of String(command ?? '').trim().matchAll(/'([^']*)'|(\S+)/g)) {
+    if (match[1] !== undefined) {
+      if (/[\n\r]/.test(match[1])) return null
+      words.push({ value: match[1], quoted: true })
+    } else if (SAFE_WORD.test(match[2])) words.push({ value: match[2], quoted: false })
+    else return null
+  }
+  return words
+}
 
 export function checkBash(command) {
-  const words = String(command ?? '').trim().split(/\s+/)
-  if (words[0] !== 'node' || !ALLOWED_SCRIPTS.includes(words[1])) {
-    return `Only these commands are available: ${ALLOWED_SCRIPTS.map((script) => `node ${script} …`).join(' | ')}. Use Read/Glob/Grep to inspect files.`
-  }
-  const unsafe = words.slice(2).find((word) => !SAFE_ARG.test(word) || word.includes('..'))
-  if (unsafe) return `Argument "${unsafe}" is not allowed: pass plain repo-relative paths and flags, without shell syntax.`
+  const usage = `Only these commands are available: ${ALLOWED_SCRIPTS.map((script) => `node ${script} …`).join(' | ')}. Use Read for files and the search script to find code.`
+  const words = tokenize(command)
+  if (!words) return `Shell syntax is not allowed (no pipes, redirects, $, backticks, double quotes or unquoted globs); wrap patterns in single quotes. ${usage}`
+  if (words[0]?.value !== 'node' || words[0].quoted || !ALLOWED_SCRIPTS.includes(words[1]?.value)) return usage
+  const unsafe = words.slice(2).find((word) => !word.quoted && word.value.includes('..'))
+  if (unsafe) return `Argument "${unsafe.value}" is not allowed: pass repo-relative paths.`
   return null
 }
 

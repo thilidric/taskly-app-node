@@ -12,7 +12,8 @@
       "Edit(./backend/tests/**)",
       "Edit(./.agent/**)",
       "Bash(node .claude/skills/run-unit-tests/scripts/tests.mjs *)",
-      "Bash(node .claude/skills/pr-change-analysis/scripts/analyze-changes.mjs *)"
+      "Bash(node .claude/skills/pr-change-analysis/scripts/analyze-changes.mjs *)",
+      "Bash(node .claude/skills/pr-change-analysis/scripts/search.mjs *)"
     ],
     "deny": [
       "WebFetch",

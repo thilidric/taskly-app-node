@@ -53,8 +53,10 @@ Track progress per candidate file. Work in this order:
 
 1. **Understand the change.** Read `.agent/change-manifest.json`, following the
    preloaded **pr-change-analysis** skill. For each candidate, read its diff, the
-   full source file, its related tests (`relatedTests`) and its importers
-   (`Grep`). Note the tests that mock it (`mockedBy`).
+   full source file and its related tests (`relatedTests`). Find its importers
+   with the skill's search script. Note the tests that mock it (`mockedBy`).
+   Shell access is limited to the skills' scripts, so use `Read` for files and
+   `search.mjs` to find files or text.
 2. **Measure.** Run the existing suite with coverage for each affected project
    (preloaded **run-unit-tests** skill). This gives the baseline, shows which
    changed lines are uncovered, and reveals tests the PR has already broken.

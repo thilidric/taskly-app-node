@@ -45,7 +45,9 @@ export function summarize(lines) {
       summary.turns = event.num_turns ?? null
       summary.costUsd = event.total_cost_usd ?? null
       summary.durationMs = event.duration_ms ?? null
-      summary.outcome = event.is_error ? `error (${event.subtype})` : event.subtype ?? 'success'
+      summary.outcome = event.is_error
+        ? `error: ${String(event.terminal_reason ?? event.subtype)}${event.api_error_status ? ` (HTTP ${event.api_error_status})` : ''}`
+        : event.subtype ?? 'success'
       summary.blocked = Math.max(summary.blocked, event.permission_denials?.length ?? 0)
     }
   }

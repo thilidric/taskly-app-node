@@ -1,7 +1,6 @@
 ---
 name: test-report
 description: Write the structured, truthful .agent/report.json that summarizes the test agent's decisions, tests written, suspected defects and observed test results. Use at the end of every test-generation run, including runs where no tests were needed.
-user-invocable: false
 ---
 
 # Test report

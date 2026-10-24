@@ -77,6 +77,20 @@ describe('guard hook', () => {
     ]) assert.notEqual(checkBash(command), null, command)
   })
 
+  it('accepts single-quoted search patterns, which bash treats literally', () => {
+    const search = 'node .claude/skills/pr-change-analysis/scripts/search.mjs'
+    assert.equal(checkBash(`${search} grep 'summarize\\(|from .*todos' frontend/src --files-only`), null)
+    assert.equal(checkBash(`${search} files 'frontend/src/**/*.test.tsx'`), null)
+    for (const command of [
+      `${search} files frontend/src/**/*.tsx`, // unquoted glob would be expanded by the shell
+      `${search} grep "$(id)"`,
+      `${search} grep 'a' ; id`,
+      `${search} grep 'a'|id`,
+      `${search} grep 'a' \`id\``,
+      `${search} grep 'unterminated`,
+    ]) assert.notEqual(checkBash(command), null, command)
+  })
+
   it('blocks writes outside test files, using absolute paths as Claude Code sends them', () => {
     assert.equal(checkWrite('/repo/frontend/src/lib/http.test.ts', '/repo'), null)
     assert.match(checkWrite('/repo/frontend/src/lib/http.ts', '/repo'), /not a test file/)

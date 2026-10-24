@@ -200,7 +200,12 @@ jobs:
             --max-budget-usd "$BUDGET_USD" \
             --no-session-persistence \
             --output-format stream-json --verbose \
-            > .agent/transcript.jsonl
+            > .agent/transcript.jsonl || status=$?
+          if grep -q '"authentication_failed"' .agent/transcript.jsonl; then
+            echo "::error title=Claude credential rejected::HTTP 401. Re-create the token with 'claude setup-token' and store it without line breaks."
+            exit 1
+          fi
+          exit "${status:-0}"
 
       - name: Collect and validate agent output
         if: always()
